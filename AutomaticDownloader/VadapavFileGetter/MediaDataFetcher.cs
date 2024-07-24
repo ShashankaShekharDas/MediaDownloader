@@ -39,7 +39,7 @@ namespace AutomaticDownloader.FileGetter
             var seriesNameAndSeason = GetNameAndSeason(response);
             foreach (var link in ParseBodyAndReturnRelativeLinks(response))
             {
-                linkParsedDictionary[[link, link]] = 0;
+                linkParsedDictionary[[link[0], link[1]]] = 0;
             }
 
             return new MediaFileInfo
@@ -50,15 +50,14 @@ namespace AutomaticDownloader.FileGetter
             };
         }
 
-        private IEnumerable<string> ParseBodyAndReturnRelativeLinks(HtmlDocument body)
+        private IEnumerable<string[]> ParseBodyAndReturnRelativeLinks(HtmlDocument body)
         {
             //There only will be 1 ul, and it will contain the link (FOR VADAPAV only)
             return body.DocumentNode
                 .SelectNodes("//ul").First()
                 .SelectNodes("//a")
                 .Where(name => _possibleFileFormats.Contains(name.InnerText.Split(".").Last()))
-                .Select(link => link.Attributes["href"])
-                .Select(ATag => ATag.Value); 
+                .Select<HtmlNode, string[]>(link => [link.InnerText, link.Attributes["href"].Value]);
         }
     }
 }
