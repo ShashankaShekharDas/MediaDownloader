@@ -13,7 +13,8 @@ namespace AutomaticDownloader.FileGetter
             "vlc",
             "mov",
             "flv",
-            "mp4"
+            "mp4",
+            "m2ts"
         ];
 
         private KeyValuePair<string, string> GetNameAndSeason(HtmlDocument body)

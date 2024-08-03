@@ -13,7 +13,7 @@
 
         private MediaDownloader()
         {
-            _httpClient = new();
+            _httpClient = new HttpClient();
         }
 
         public static MediaDownloader Init(int numberOfConcurrentDownloads, string baseDirectory)
@@ -58,23 +58,28 @@
         public async Task<bool> DownloadFile(string siteUrl, string relativeFilePath, string fileName)
         {
             Console.WriteLine($"Download started for file {fileName}");
-            // FileName should contain extension
+            var downloadFileName = Path.Combine(_baseDirectory, fileName);
             var urlParts = siteUrl.Split('/');
             var filePath = string.Join("/", urlParts.Take(urlParts.Length - 2).Append(relativeFilePath[1..]));
             var success = false;
             try
             {
+                Console.WriteLine($"Download file: {filePath}");
                 using var dataStream = await _httpClient.GetStreamAsync(filePath);
-                using var fileStream = new FileStream(Path.Combine(_baseDirectory, fileName), FileMode.OpenOrCreate);
+                using var fileStream = new FileStream(downloadFileName, FileMode.OpenOrCreate);
                 await dataStream.CopyToAsync(fileStream);
                 success = true;
             }
             catch (Exception ex)
             {
+                if (File.Exists(downloadFileName))
+                {
+                    Console.WriteLine("Deleting failed download file");
+                    File.Delete(downloadFileName);
+                }
                 Console.WriteLine(ex.Message, ex.StackTrace);
             }
 
-            FreeConnection(this);
             return success;
         }
     }
