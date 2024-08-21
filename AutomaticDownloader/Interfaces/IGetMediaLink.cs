@@ -1,6 +1,6 @@
 ﻿using AutomaticDownloader.VadapavFileGetter;
 
-namespace AutomaticDownloader.FileGetter
+namespace AutomaticDownloader.Interfaces
 {
     public interface IGetMediaLink
     {

@@ -1,4 +1,5 @@
 ﻿using AutomaticDownloader.Http;
+using AutomaticDownloader.Interfaces;
 using AutomaticDownloader.VadapavFileGetter;
 using HtmlAgilityPack;
 
@@ -14,7 +15,8 @@ namespace AutomaticDownloader.FileGetter
             "mov",
             "flv",
             "mp4",
-            "m2ts"
+            "m2ts",
+            "avi"
         ];
 
         private KeyValuePair<string, string> GetNameAndSeason(HtmlDocument body)
