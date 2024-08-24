@@ -1,4 +1,4 @@
-﻿namespace AutomaticDownloader.Interfaces
+﻿namespace MediaDownloaderKafkaRelayer.Interfaces
 {
     internal interface IMessageConsumer
     {

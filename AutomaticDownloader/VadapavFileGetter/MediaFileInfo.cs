@@ -4,7 +4,7 @@
     {
         public string? Title { get; set; }
         public string? Season { get; set; }
-        public Dictionary<string[], int>? MediaLink { get; set; } 
+        public Dictionary<string[], int>? MediaLink { get; set; }
         // string[] => [fileName, downloadLink]
         // Int -> Status
         // 0 -> Not started

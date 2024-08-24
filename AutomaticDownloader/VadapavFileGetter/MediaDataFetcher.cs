@@ -1,14 +1,13 @@
 ﻿using AutomaticDownloader.Http;
 using AutomaticDownloader.Interfaces;
-using AutomaticDownloader.VadapavFileGetter;
 using HtmlAgilityPack;
 
-namespace AutomaticDownloader.FileGetter
+namespace AutomaticDownloader.VadapavFileGetter
 {
     public sealed class MediaDataFetcher(string url) : IGetMediaLink
     {
         private readonly string _url = url;
-        public HashSet<string> _possibleFileFormats =
+        private readonly HashSet<string> _possibleFileFormats =
         [
             "mkv",
             "vlc",
@@ -19,12 +18,11 @@ namespace AutomaticDownloader.FileGetter
             "avi"
         ];
 
-        private KeyValuePair<string, string> GetNameAndSeason(HtmlDocument body)
+        private static KeyValuePair<string, string> GetNameAndSeason(HtmlDocument body)
         {
-            var dir = body.DocumentNode
+            IEnumerable<string> dir = body.DocumentNode
                 .SelectNodes("//div")
-                .Where(node => node.Attributes["class"] is not null && node.Attributes["class"].Value == "directory").First()
-                .SelectNodes("//span")
+                .First(node => node.Attributes["class"] is not null && node.Attributes["class"].Value == "directory").SelectNodes("//span")
                 .Where(node => !node.InnerText.Contains('/') && !node.InnerText.Contains("TV") && !node.InnerText.Contains("Movies"))
                 .Select(node => node.InnerText);
 
@@ -37,10 +35,10 @@ namespace AutomaticDownloader.FileGetter
 
         public MediaFileInfo GetMediaInfo()
         {
-            var linkParsedDictionary = new Dictionary<string[], int>();
-            var response = HttpHelper.GetBody(_url);
-            var seriesNameAndSeason = GetNameAndSeason(response);
-            foreach (var link in ParseBodyAndReturnRelativeLinks(response))
+            Dictionary<string[], int> linkParsedDictionary = new Dictionary<string[], int>();
+            HtmlDocument response = HttpHelper.GetBody(_url);
+            KeyValuePair<string, string> seriesNameAndSeason = GetNameAndSeason(response);
+            foreach (string[] link in ParseBodyAndReturnRelativeLinks(response))
             {
                 linkParsedDictionary[[link[0], link[1]]] = 0;
             }
@@ -57,7 +55,7 @@ namespace AutomaticDownloader.FileGetter
         {
             //There only will be 1 ul, and it will contain the link (FOR VADAPAV only)
             return body.DocumentNode
-                .SelectNodes("//ul").First()
+                .SelectNodes("//ul")[0]
                 .SelectNodes("//a")
                 .Where(name => _possibleFileFormats.Contains(name.InnerText.Split(".").Last()))
                 .Select<HtmlNode, string[]>(link => [link.InnerText, link.Attributes["href"].Value]);

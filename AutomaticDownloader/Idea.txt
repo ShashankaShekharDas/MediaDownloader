@@ -1,0 +1,12 @@
+Idea:
+(Diagram to follow later)
+User sends a request to Kafka with the media Info (record MediaRecord)
+The listener, listens to the request and based on priority, forced cluster, routes it to another kafka topic
+
+The specific machines listen to their corressponding kafka topic (every 5 minutes), downloads
+And (maybe) uplaods to cloud
+
+
+In future to be fixed:
+1) In future, ideal 3 partition, 3 replciation and 3 broker hosts
+2) Downloads for now SHOULD support vadapav and torrent. Torrent has to find a cli to work with

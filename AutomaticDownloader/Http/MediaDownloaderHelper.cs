@@ -5,7 +5,7 @@
         private readonly HttpClient _httpClient;
         private string _baseDirectory = "./";
         private static MediaDownloaderHelper? _singleton = null;
-        private Dictionary<bool, List<MediaDownloaderHelper>> _availabiltyInstanceRecord = new()
+        private readonly Dictionary<bool, List<MediaDownloaderHelper>> _availabiltyInstanceRecord = new()
         {
             [true] = [],
             [false] = []
@@ -27,7 +27,7 @@
 
             for (int i = 0; i < numberOfConcurrentDownloads; i++)
             {
-                _singleton._availabiltyInstanceRecord[true].Add(new MediaDownloaderHelper() { _baseDirectory = baseDirectory});
+                _singleton._availabiltyInstanceRecord[true].Add(new MediaDownloaderHelper() { _baseDirectory = baseDirectory });
             }
 
             return _singleton;
@@ -35,17 +35,18 @@
 
         public MediaDownloaderHelper? GetConnection()
         {
+#pragma warning disable S2551 // Shared resources should not be used for locking. Fix in the future
             lock (this)
             {
-                //Console.WriteLine($"Call made to GetConnection(), number of connections unused {_availabiltyInstanceRecord[true].Count} and used {_availabiltyInstanceRecord[false].Count}");
                 if (_availabiltyInstanceRecord[true].Count != 0)
                 {
-                    var downloader = _availabiltyInstanceRecord[true].First();
+                    MediaDownloaderHelper downloader = _availabiltyInstanceRecord[true][0];
                     _availabiltyInstanceRecord[true].Remove(downloader);
                     _availabiltyInstanceRecord[false].Add(downloader);
                     return downloader;
                 }
             }
+#pragma warning restore S2551 // Shared resources should not be used for locking
             return null;
         }
 
@@ -58,15 +59,15 @@
         public async Task<bool> DownloadFile(string siteUrl, string relativeFilePath, string fileName)
         {
             Console.WriteLine($"Download started for file {fileName}");
-            var downloadFileName = Path.Combine(_baseDirectory, fileName);
-            var urlParts = siteUrl.Split('/');
-            var filePath = string.Join("/", urlParts.Take(urlParts.Length - 2).Append(relativeFilePath[1..]));
-            var success = false;
+            string downloadFileName = Path.Combine(_baseDirectory, fileName);
+            string[] urlParts = siteUrl.Split('/');
+            string filePath = string.Join("/", urlParts.Take(urlParts.Length - 2).Append(relativeFilePath[1..]));
+            bool success = false;
             try
             {
                 Console.WriteLine($"Download file: {filePath}");
-                using var dataStream = await _httpClient.GetStreamAsync(filePath);
-                using var fileStream = new FileStream(downloadFileName, FileMode.OpenOrCreate);
+                using Stream dataStream = await _httpClient.GetStreamAsync(filePath);
+                using FileStream fileStream = new FileStream(downloadFileName, FileMode.OpenOrCreate);
                 await dataStream.CopyToAsync(fileStream);
                 success = true;
             }

@@ -1,4 +1,4 @@
-﻿namespace AutomaticDownloader.Listener
+﻿namespace MediaDownloaderKafkaRelayer.Listener
 {
     public enum MediaPriority
     {
