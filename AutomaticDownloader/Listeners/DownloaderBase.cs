@@ -49,10 +49,8 @@ namespace AutomaticDownloader.Listeners
             return true;
         }
 
-        public static void StartDownload(string name, string link)
+        public static void StartDownload(string name, string link, string baseDirectory)
         {
-            string baseDirectory = "D:\\Qbit";
-
             Directory.CreateDirectory($"{baseDirectory}\\{name}");
             Console.WriteLine($"Starting downlaod for series {name}");
 

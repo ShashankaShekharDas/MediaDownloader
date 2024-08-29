@@ -4,9 +4,9 @@ using HtmlAgilityPack;
 
 namespace AutomaticDownloader.VadapavFileGetter
 {
-    public sealed class MediaDataFetcher(string url) : IGetMediaLink
+    public sealed class MediaDataFetcher : IGetMediaLink
     {
-        private readonly string _url = url;
+        private readonly string _url;
         private readonly HashSet<string> _possibleFileFormats =
         [
             "mkv",
@@ -17,6 +17,10 @@ namespace AutomaticDownloader.VadapavFileGetter
             "m2ts",
             "avi"
         ];
+        public MediaDataFetcher(string url)
+        {
+            _url = url;
+        }
 
         private static KeyValuePair<string, string> GetNameAndSeason(HtmlDocument body)
         {

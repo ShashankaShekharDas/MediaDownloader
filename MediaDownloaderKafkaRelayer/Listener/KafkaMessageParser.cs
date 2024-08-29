@@ -22,6 +22,7 @@ namespace MediaDownloaderKafkaRelayer.Listener
 
         public void StartListening()
         {
+            Console.WriteLine($"Started Listening to topic : {_topic}");
             while (true)
             {
                 using IConsumer<string, string> consumer = new ConsumerBuilder<string, string>(_config.AsEnumerable()).Build();
@@ -34,6 +35,7 @@ namespace MediaDownloaderKafkaRelayer.Listener
                     {
                         if (consumedMessage != null)
                         {
+                            Console.WriteLine("Got Message. Trying to route");
                             MediaRecord? deserializedRecord = JsonSerializer.Deserialize<MediaRecord>(consumedMessage.Message.Value) ?? throw new InvalidDataException("Invalid value in Kafka topic");
 
                             string destinationKafkaTopic = string.IsNullOrEmpty(deserializedRecord.ForcedCluster) ? ClusterHelper.GetRelayKafkaTopic(deserializedRecord.Priority)

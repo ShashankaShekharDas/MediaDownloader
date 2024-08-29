@@ -6,7 +6,8 @@ namespace AutomaticDownloader.Listeners
     public sealed class KafkaMessageListener : IListener
     {
         private readonly IConfiguration _configuration;
-        private const string _topic = "prd.mediadownloader.base";
+        private readonly string _topic = Environment.GetEnvironmentVariable("topic") ?? "prd.mediadownloader.base";
+        private readonly string _directory = Environment.GetEnvironmentVariable("baseDirectory") ?? "D:\\Qbit";
 
         public KafkaMessageListener()
         {
@@ -15,7 +16,7 @@ namespace AutomaticDownloader.Listeners
                             .AddIniFile("client.properties", false)
                             .Build();
 
-            _configuration["group.id"] = "base-group-test2";
+            _configuration["group.id"] = _topic;
             _configuration["auto.offset.reset"] = "earliest";
         }
 
@@ -23,6 +24,7 @@ namespace AutomaticDownloader.Listeners
         public void ListenMessage()
 #pragma warning restore S2190 // Loops and recursions should not be infinite
         {
+            Console.WriteLine($"Started listening on topic {_topic}");
             using IConsumer<string, string> consumer = new ConsumerBuilder<string, string>(_configuration.AsEnumerable()).Build();
             consumer.Subscribe(_topic);
             while (true)
@@ -32,8 +34,9 @@ namespace AutomaticDownloader.Listeners
                     ConsumeResult<string, string> consumedMessage = consumer.Consume();
                     if (consumedMessage != null)
                     {
+                        Console.WriteLine("Got message. Parsing it and will start download");
                         string downloadLink = consumedMessage.Message.Value;
-                        Task.Run(() => DownloaderBase.StartDownload(consumedMessage.Message.Key, downloadLink));
+                        Task.Run(() => DownloaderBase.StartDownload(consumedMessage.Message.Key, downloadLink, _directory));
                     }
                 }
                 catch
