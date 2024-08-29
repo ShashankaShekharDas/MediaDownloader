@@ -12,7 +12,7 @@ namespace KafkaBaseWriter
             IConfiguration config = KafkaConsumerSettings.GetConsumerConfig();
             const string topic = "prd.mediadownloader.relay";
 
-            MediaRecord record = new MediaRecord("Game of Thrones S04", "https://vadapav.mov/bd33533e-e20d-440d-9b24-d680475f1ff1/", MediaPriority.High, DownloadType.Vadapav);
+            MediaRecord record = new("Bad Teacher", "https://vadapav.mov/7d3d0641-ea62-4b83-a5fa-c70477fd641e/", MediaPriority.High, DownloadType.Vadapav);
 
             string serializedString = JsonSerializer.Serialize(record);
 

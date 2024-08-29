@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutomaticDownloader", "Auto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaDownloaderKafkaRelayer", "MediaDownloaderKafkaRelayer\MediaDownloaderKafkaRelayer.csproj", "{A6190FFB-69E7-40DF-B4F7-8E5B06189DE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaBaseWriter", "KafkaBaseWriter\KafkaBaseWriter.csproj", "{49836C24-8007-4ABA-919F-77234F20CC6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A6190FFB-69E7-40DF-B4F7-8E5B06189DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6190FFB-69E7-40DF-B4F7-8E5B06189DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6190FFB-69E7-40DF-B4F7-8E5B06189DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49836C24-8007-4ABA-919F-77234F20CC6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49836C24-8007-4ABA-919F-77234F20CC6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49836C24-8007-4ABA-919F-77234F20CC6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49836C24-8007-4ABA-919F-77234F20CC6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

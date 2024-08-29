@@ -502,6 +502,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Secret Files
+*.properties
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
