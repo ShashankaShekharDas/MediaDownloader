@@ -7,7 +7,7 @@ namespace AutomaticDownloader.Listeners
     {
         private readonly IConfiguration _configuration;
         private readonly string _topic = Environment.GetEnvironmentVariable("topic") ?? "prd.mediadownloader.base";
-        private readonly string _directory = Environment.GetEnvironmentVariable("baseDirectory") ?? "D:\\Qbit";
+        private readonly string _directory = "/download";
 
         public KafkaMessageListener()
         {
@@ -34,8 +34,8 @@ namespace AutomaticDownloader.Listeners
                     ConsumeResult<string, string> consumedMessage = consumer.Consume();
                     if (consumedMessage != null)
                     {
-                        Console.WriteLine("Got message. Parsing it and will start download");
                         string downloadLink = consumedMessage.Message.Value;
+                        Console.WriteLine($"Got message. Parsing it and will start download. Key {consumedMessage.Message.Key} Value {downloadLink}");
                         Task.Run(() => DownloaderBase.StartDownload(consumedMessage.Message.Key, downloadLink, _directory));
                     }
                 }

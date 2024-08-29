@@ -1,0 +1,9 @@
+~Will be added in a readme later
+
+
+After creating the docker container.
+
+While running, it expects 
+
+1) An environment variable topic -> if not found defaults to prd.mediadownloader.base
+2) A volume in your machine bound to the path /download in the container

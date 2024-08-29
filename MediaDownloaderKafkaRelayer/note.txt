@@ -1,0 +1,8 @@
+~Will be added in a readme later
+
+
+After creating the docker container.
+
+While running, it expects 
+
+1) An environment variable topic -> if not found defaults to prd.mediadownloader.relay. (which for now is fine)

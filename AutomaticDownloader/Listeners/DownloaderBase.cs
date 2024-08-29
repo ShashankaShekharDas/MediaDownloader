@@ -14,7 +14,7 @@ namespace AutomaticDownloader.Listeners
 
         async static Task DownLoadFileAsync(string[] linksInfo, MediaFileInfo mediaInfo, MediaDownloaderHelper downloader, string seriesLink)
         {
-            MediaDownloaderHelper? connection = null;
+            MediaDownloaderHelper? connection;
 
             do
             {
@@ -51,17 +51,25 @@ namespace AutomaticDownloader.Listeners
 
         public static void StartDownload(string name, string link, string baseDirectory)
         {
-            Directory.CreateDirectory($"{baseDirectory}\\{name}");
-            Console.WriteLine($"Starting downlaod for series {name}");
-
-            MediaDownloaderHelper downloader = MediaDownloaderHelper.Init(3, $"{baseDirectory}\\{name}");
-            MediaFileInfo mediaInfo = new MediaDataFetcher(link).GetMediaInfo();
-
-            while (!CheckIfAllFilesDownloaded(mediaInfo.MediaLink, out string[]? downloadLink))
+            try
             {
-                mediaInfo.MediaLink[downloadLink] = 1;
-                Console.WriteLine("Waiting to Start " + downloadLink[0]);
-                DownLoadFileAsync(downloadLink, mediaInfo, downloader, link).ConfigureAwait(false);
+                string downloadDirectory = Path.Join(baseDirectory, name);
+                Console.WriteLine($"Starting download for series {name}");
+                Directory.CreateDirectory(downloadDirectory);
+
+                MediaDownloaderHelper downloader = MediaDownloaderHelper.Init(3, downloadDirectory);
+                MediaFileInfo mediaInfo = new MediaDataFetcher(link).GetMediaInfo();
+
+                while (!CheckIfAllFilesDownloaded(mediaInfo.MediaLink, out string[]? downloadLink))
+                {
+                    mediaInfo.MediaLink[downloadLink] = 1;
+                    Console.WriteLine("Waiting to Start " + downloadLink[0]);
+                    DownLoadFileAsync(downloadLink, mediaInfo, downloader, link).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
         }
     }
