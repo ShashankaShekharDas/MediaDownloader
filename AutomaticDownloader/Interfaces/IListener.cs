@@ -1,7 +1,6 @@
-﻿namespace AutomaticDownloader.Interfaces
+﻿namespace AutomaticDownloader.Interfaces;
+
+internal interface IListener
 {
-    internal interface IListener
-    {
-        void ListenMessage();
-    }
+    void ListenMessage();
 }

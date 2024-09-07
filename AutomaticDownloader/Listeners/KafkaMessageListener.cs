@@ -1,49 +1,45 @@
 ﻿using AutomaticDownloader.Interfaces;
 using Confluent.Kafka;
+using KafkaHandler.Helpers;
+using KafkaHandler.Listener;
 using Microsoft.Extensions.Configuration;
-namespace AutomaticDownloader.Listeners
+using Microsoft.Extensions.Logging;
+
+namespace AutomaticDownloader.Listeners;
+public sealed class KafkaMessageListener : IListener
 {
-    public sealed class KafkaMessageListener : IListener
+    private readonly IConfiguration _configuration;
+    private const string Directory = "/download";
+    private readonly string _topic;
+    private readonly int _concurrentDownloads;
+    private readonly KafkaListener _kafkaListener;
+
+    public KafkaMessageListener(string topic, int concurrentDownloads)
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _topic = Environment.GetEnvironmentVariable("topic") ?? "prd.mediadownloader.base";
-        private readonly string _directory = "/download";
+        _topic = topic;
+        _configuration = KafkaBaseHandler.GetConfiguration(_topic);
+        _kafkaListener = new KafkaListener();
+        _concurrentDownloads = concurrentDownloads;
+    }
 
-        public KafkaMessageListener()
+#pragma warning disable S2190
+    public void ListenMessage()
+    {
+        Program.Logger.LogInformation($"Started listening on topic {_topic}");
+        while (true)
         {
-            _configuration = new ConfigurationBuilder()
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddIniFile("client.properties", false)
-                            .Build();
-
-            _configuration["group.id"] = _topic;
-            _configuration["auto.offset.reset"] = "earliest";
-        }
-
-#pragma warning disable S2190 // Loops and recursions should not be infinite. Exception as should listen forever
-        public void ListenMessage()
-#pragma warning restore S2190 // Loops and recursions should not be infinite
-        {
-            Console.WriteLine($"Started listening on topic {_topic}");
-            using IConsumer<string, string> consumer = new ConsumerBuilder<string, string>(_configuration.AsEnumerable()).Build();
-            consumer.Subscribe(_topic);
-            while (true)
+            try
             {
-                try
-                {
-                    ConsumeResult<string, string> consumedMessage = consumer.Consume();
-                    if (consumedMessage != null)
-                    {
-                        string downloadLink = consumedMessage.Message.Value;
-                        Console.WriteLine($"Got message. Parsing it and will start download. Key {consumedMessage.Message.Key} Value {downloadLink}");
-                        Task.Run(() => DownloaderBase.StartDownload(consumedMessage.Message.Key, downloadLink, _directory));
-                    }
-                }
-                catch
-                {
-                    Console.WriteLine("Exception");
-                }
+                var consumedMessage = _kafkaListener.Listen(_configuration, _topic);
+                var downloadLink = consumedMessage.Value;
+                Program.Logger.LogInformation($"Got message. Parsing it and will start download. Key {consumedMessage.Key} Value {downloadLink}");
+                Task.Run(() => DownloaderBase.StartDownload(consumedMessage.Key, downloadLink, Directory, _concurrentDownloads));
+            }
+            catch
+            {
+                // ignored
             }
         }
     }
+#pragma warning restore S2190
 }

@@ -1,87 +1,96 @@
-﻿namespace AutomaticDownloader.Http
-{
-    public sealed class MediaDownloaderHelper
-    {
-        private readonly HttpClient _httpClient;
-        private string _baseDirectory = "./";
-        private static MediaDownloaderHelper? _singleton = null;
-        private readonly Dictionary<bool, List<MediaDownloaderHelper>> _availabiltyInstanceRecord = new()
-        {
-            [true] = [],
-            [false] = []
-        };
+﻿using Microsoft.Extensions.Logging;
 
-        private MediaDownloaderHelper()
-        {
-            _httpClient = new HttpClient();
-        }
+namespace AutomaticDownloader.Http;
 
-        public static MediaDownloaderHelper Init(int numberOfConcurrentDownloads, string baseDirectory)
-        {
-            if (_singleton != null)
-            {
-                return _singleton;
-            }
 
-            _singleton = new MediaDownloaderHelper();
-
-            for (int i = 0; i < numberOfConcurrentDownloads; i++)
-            {
-                _singleton._availabiltyInstanceRecord[true].Add(new MediaDownloaderHelper() { _baseDirectory = baseDirectory });
-            }
-
-            return _singleton;
-        }
-
-        public MediaDownloaderHelper? GetConnection()
-        {
 #pragma warning disable S2551 // Shared resources should not be used for locking. Fix in the future
-            lock (this)
-            {
-                if (_availabiltyInstanceRecord[true].Count != 0)
-                {
-                    MediaDownloaderHelper downloader = _availabiltyInstanceRecord[true][0];
-                    _availabiltyInstanceRecord[true].Remove(downloader);
-                    _availabiltyInstanceRecord[false].Add(downloader);
-                    return downloader;
-                }
-            }
-#pragma warning restore S2551 // Shared resources should not be used for locking
-            return null;
-        }
+public sealed class MediaDownloaderHelper
+{
+    private static MediaDownloaderHelper? _singleton;
 
-        public void FreeConnection(MediaDownloaderHelper mediaDownloader)
+    private Dictionary<bool, List<MediaDownloaderHelper>> _availabiltyInstanceRecord = new()
+    {
+        [true] = [],
+        [false] = []
+    };
+
+    private readonly HttpClient _httpClient;
+
+    private MediaDownloaderHelper()
+    {
+        _httpClient = new HttpClient
         {
-            _availabiltyInstanceRecord[false].Remove(mediaDownloader);
-            _availabiltyInstanceRecord[true].Add(mediaDownloader);
-        }
+            Timeout = TimeSpan.FromSeconds(30)
+        };
+    }
 
-        public async Task<bool> DownloadFile(string siteUrl, string relativeFilePath, string fileName)
+    public static MediaDownloaderHelper Init(int numberOfConcurrentDownloads)
+    {
+        if (_singleton != null) return _singleton;
+
+        _singleton = new MediaDownloaderHelper();
+
+        for (var i = 0; i < numberOfConcurrentDownloads; i++)
+            _singleton._availabiltyInstanceRecord[true].Add(new MediaDownloaderHelper());
+
+        return _singleton;
+    }
+
+    public MediaDownloaderHelper? GetConnection()
+    {
+        lock (this)
         {
-            Console.WriteLine($"Download started for file {fileName}");
-            string downloadFileName = Path.Combine(_baseDirectory, fileName);
-            string[] urlParts = siteUrl.Split('/');
-            string filePath = string.Join("/", urlParts.Take(urlParts.Length - 2).Append(relativeFilePath[1..]));
-            bool success = false;
-            try
-            {
-                Console.WriteLine($"Download file: {filePath}");
-                using Stream dataStream = await _httpClient.GetStreamAsync(filePath);
-                using FileStream fileStream = new FileStream(downloadFileName, FileMode.OpenOrCreate);
-                await dataStream.CopyToAsync(fileStream);
-                success = true;
-            }
-            catch (Exception ex)
-            {
-                if (File.Exists(downloadFileName))
-                {
-                    Console.WriteLine("Deleting failed download file");
-                    File.Delete(downloadFileName);
-                }
-                Console.WriteLine(ex.Message, ex.StackTrace);
-            }
-
-            return success;
+            if (_availabiltyInstanceRecord[true].Count == 0) return null;
+            
+            var downloader = _availabiltyInstanceRecord[true][0];
+            _availabiltyInstanceRecord[true].Remove(downloader);
+            _availabiltyInstanceRecord[false].Add(downloader);
+            return downloader;
         }
     }
+
+    public void FreeConnection(MediaDownloaderHelper mediaDownloader)
+    {
+        _availabiltyInstanceRecord[false].Remove(mediaDownloader);
+        _availabiltyInstanceRecord[true].Add(mediaDownloader);
+    }
+
+    public async Task<DownloadedFileRecord> DownloadFile(string siteUrl, string relativeFilePath, string fileName,
+        string baseDirectory)
+    {
+        var fileRecord = new DownloadedFileRecord();
+        Program.Logger.LogInformation($"Download started for file {fileName}");
+        var downloadFileName = Path.Combine(baseDirectory, fileName);
+        var urlParts = siteUrl.Split('/');
+        var filePath = string.Join("/", urlParts.Take(urlParts.Length - 2).Append(relativeFilePath[1..]));
+        var success = false;
+        long sizeOfFile = 0;
+        
+        try
+        {
+            Program.Logger.LogInformation($"Download file: {filePath}");
+            using var dataStream = await _httpClient.GetStreamAsync(filePath);
+            using var fileStream = new FileStream(downloadFileName, FileMode.OpenOrCreate);
+            await dataStream.CopyToAsync(fileStream);
+            success = true;
+            sizeOfFile = new FileInfo(downloadFileName).Length / 1024;
+        }
+        catch (Exception ex)
+        {
+            if (File.Exists(downloadFileName))
+            {
+                sizeOfFile = new FileInfo(downloadFileName).Length / 1024;
+                Program.Logger.LogError($"Deleting failed download file {downloadFileName}");
+                File.Delete(downloadFileName);
+            }
+            Program.Logger.LogError(ex.Message, ex.StackTrace);
+        }
+
+        fileRecord.Status = success;
+        fileRecord.FileSizeInKb = sizeOfFile;
+        fileRecord.DateTime = DateTime.Now;
+        
+        return fileRecord;
+    }
 }
+#pragma warning restore S2551 // Shared resources should not be used for locking

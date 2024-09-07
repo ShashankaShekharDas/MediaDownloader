@@ -1,9 +1,8 @@
 ﻿using AutomaticDownloader.VadapavFileGetter;
 
-namespace AutomaticDownloader.Interfaces
+namespace AutomaticDownloader.Interfaces;
+
+public interface IGetMediaLink
 {
-    public interface IGetMediaLink
-    {
-        public MediaFileInfo GetMediaInfo();
-    }
+    public MediaFileInfo GetMediaInfo();
 }

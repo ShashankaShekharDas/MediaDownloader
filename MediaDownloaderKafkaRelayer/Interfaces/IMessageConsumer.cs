@@ -1,8 +1,7 @@
-﻿namespace MediaDownloaderKafkaRelayer.Interfaces
+﻿namespace MediaDownloaderKafkaRelayer.Interfaces;
+
+internal interface IMessageConsumer
 {
-    internal interface IMessageConsumer
-    {
-        void StartListening();
-        void StopListening();
-    }
+    void StartListening();
+    void StopListening();
 }

@@ -3,37 +3,40 @@ using Confluent.Kafka;
 using KafkaBaseWriter.Helpers;
 using Microsoft.Extensions.Configuration;
 
-namespace KafkaBaseWriter
+namespace KafkaBaseWriter;
+
+internal class KafkaWriter
 {
-    internal class KafkaWriter
+    private static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            IConfiguration config = KafkaConsumerSettings.GetConsumerConfig();
-            const string topic = "prd.mediadownloader.relay";
+        var config = KafkaConsumerSettings.GetConsumerConfig();
+        const string topic = "prd.mediadownloader.relay";
 
-            MediaRecord record = new("Bad Teacher", "https://vadapav.mov/7d3d0641-ea62-4b83-a5fa-c70477fd641e/", MediaPriority.High, DownloadType.Vadapav);
+        MediaRecord record = new("Impractical Jokers S09", "https://vadapav.mov/7ef84160-09c6-4aa6-b5c3-2a91dadddd5d/",
+            MediaPriority.Medium, DownloadType.Vadapav);
+        var serializedString = JsonSerializer.Serialize(record);
 
-            string serializedString = JsonSerializer.Serialize(record);
+        // Send the message
+        using var producer = new ProducerBuilder<string, string>(config.AsEnumerable()).Build();
 
-            // Send the message
-            using IProducer<string, string> producer = new ProducerBuilder<string, string>(config.AsEnumerable()).Build();
+        producer.Flush();
 
-            producer.Produce(topic, new Message<string, string> { Key = record.Name, Value = serializedString, Timestamp = new Timestamp(DateTime.Now, TimestampType.CreateTime) },
-                 (deliveryReport) =>
-                 {
-                     if (deliveryReport.Error.Code != ErrorCode.NoError)
-                     {
-                         Console.WriteLine($"Failed to deliver message: {deliveryReport.Error.Reason}");
-                     }
-                     else
-                     {
-                         Console.WriteLine($"Produced event to topic {topic}: key = {deliveryReport.Message.Key,-10} value = {deliveryReport.Message.Value}");
-                     }
-                 }
-               );
+        producer.Produce(topic,
+            new Message<string, string>
+            {
+                Key = record.Name, Value = serializedString,
+                Timestamp = new Timestamp(DateTime.Now, TimestampType.CreateTime)
+            },
+            deliveryReport =>
+            {
+                if (deliveryReport.Error.Code != ErrorCode.NoError)
+                    Console.WriteLine($"Failed to deliver message: {deliveryReport.Error.Reason}");
+                else
+                    Console.WriteLine(
+                        $"Produced event to topic {topic}: key = {deliveryReport.Message.Key,-10} value = {deliveryReport.Message.Value}");
+            }
+        );
 
-            producer.Flush(TimeSpan.FromSeconds(10));
-        }
+        producer.Flush(TimeSpan.FromSeconds(10));
     }
 }
