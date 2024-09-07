@@ -1,9 +1,8 @@
-﻿namespace KafkaBaseWriter.Helpers
+﻿namespace KafkaBaseWriter.Helpers;
+
+public enum MediaPriority
 {
-    public enum MediaPriority
-    {
-        High = 0,
-        Medium = 1,
-        Low = 2
-    }
+    High = 0,
+    Medium = 1,
+    Low = 2
 }

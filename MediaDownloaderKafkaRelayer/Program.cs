@@ -1,14 +1,13 @@
 ﻿using MediaDownloaderKafkaRelayer.Listener;
 
-namespace MediaDownloaderKafkaRelayer
-{
-    class Program
-    {
-        public static void Main(string[] args)
-        {
-            string topic = Environment.GetEnvironmentVariable("topic") ?? "prd.mediadownloader.relay";
+namespace MediaDownloaderKafkaRelayer;
 
-            new KafkaMessageParser(topic, "earliest", topic).StartListening();
-        }
+internal class Program
+{
+    public static void Main()
+    {
+        var topic = Environment.GetEnvironmentVariable("topic") ?? "prd.mediadownloader.relay";
+        Console.WriteLine($"Will try to listen to topic {topic}");
+        new KafkaMessageParser(topic, "earliest", topic).StartListening();
     }
 }

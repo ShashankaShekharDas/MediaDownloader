@@ -1,8 +1,7 @@
-﻿namespace KafkaBaseWriter.Helpers
+﻿namespace KafkaBaseWriter.Helpers;
+
+public enum DownloadType
 {
-    public enum DownloadType
-    {
-        Vadapav,
-        Torrent
-    }
+    Vadapav,
+    Torrent
 }

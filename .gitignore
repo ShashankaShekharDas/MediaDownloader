@@ -508,4 +508,8 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
+### Rider files
+
+.idea
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,c,c++,visualstudio,visualstudiocode

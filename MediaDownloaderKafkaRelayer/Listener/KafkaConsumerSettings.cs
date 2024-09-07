@@ -1,15 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace MediaDownloaderKafkaRelayer.Listener
+namespace MediaDownloaderKafkaRelayer.Listener;
+
+public sealed class KafkaConsumerSettings
 {
-    public sealed class KafkaConsumerSettings
+    public static IConfiguration GetConsumerConfig()
     {
-        public static IConfiguration GetConsumerConfig()
-        {
-            return new ConfigurationBuilder()
+        return new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddIniFile("client.properties", false)
             .Build();
-        }
     }
 }

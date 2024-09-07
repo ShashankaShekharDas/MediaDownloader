@@ -1,8 +1,7 @@
-﻿namespace MediaDownloaderKafkaRelayer.Listener
+﻿namespace MediaDownloaderKafkaRelayer.Listener;
+
+public enum DownloadType
 {
-    public enum DownloadType
-    {
-        Vadapav,
-        Torrent
-    }
+    Vadapav,
+    Torrent
 }
